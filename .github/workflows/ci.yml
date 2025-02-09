@@ -58,9 +58,6 @@ jobs:
             - name: "Installation des dépendances dans le conteneur backend"
               run: docker compose exec backend composer install --prefer-dist --no-interaction
 
-            - name: "Création de la base de données"
-              run: make db-create
-
             - name: "Déploiement des migrations"
               run: make migrate
 
