@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Validator\Constraints;
+namespace App\Domain\Bookmark\Validator\Constraints;
 
 use Attribute;
 use Symfony\Component\Validator\Constraint;

@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Repository;
+namespace App\Infrastructure\Persistence\Doctrine;
 
-use App\Entity\Bookmark;
+use App\Domain\Bookmark\Entity\Bookmark;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 

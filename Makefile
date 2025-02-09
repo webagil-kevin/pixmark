@@ -1,5 +1,5 @@
 .PHONY: build up down lint-backend lint-frontend lint fix-frontend fix-backend fix phpstan phpunit npm-test \
-		install-cert install shell-backend shell-frontend
+		install-cert install shell-backend shell-frontend cache-clear-backend
 
 # Build all Docker images
 build:
@@ -98,3 +98,7 @@ shell-backend:
 # Frontend bash
 shell-frontend:
 	docker compose exec frontend bash || docker compose exec frontend sh
+
+# Backend cache clear
+cache-clear-backend:
+	docker compose run --rm backend php bin/console cache:clear

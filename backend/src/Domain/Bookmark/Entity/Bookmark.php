@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Entity;
+namespace App\Domain\Bookmark\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
-use App\Repository\BookmarkRepository;
-use App\Validator\Constraints as AppAssert;
+use App\Infrastructure\Persistence\Doctrine\BookmarkRepository;
+use App\Domain\Bookmark\Validator\Constraints as AppAssert;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
