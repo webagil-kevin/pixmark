@@ -1,43 +1,47 @@
-.PHONY: build up down lint-backend lint-frontend lint fix phpstan phpunit npm-test install-cert
+.PHONY: build up down lint-backend lint-frontend lint fix phpstan phpunit npm-test install-cert install
 
 # Build all Docker images
 build:
-	docker-compose build
+	docker compose build
 
 # Start the services in detached mode
 up:
-	docker-compose up -d
+	docker compose up -d
+
+# Stop the services
+stop:
+	docker compose stop
 
 # Stop and remove the services
 down:
-	docker-compose down
+	docker compose down
 
 # Run ESLint on the front-end
 lint-frontend:
-	docker-compose run --rm frontend npm run lint
+	docker compose run --rm frontend npm run lint
 
 # Run PHP-CS-Fixer in dry-run mode on the back-end
 lint-backend:
-	docker-compose run --rm backend vendor/bin/php-cs-fixer fix --dry-run --diff
+	docker compose run --rm backend vendor/bin/php-cs-fixer fix --dry-run --diff
 
 # Run both linters
 lint: lint-frontend lint-backend
 
 # Automatically fix PHP code style issues
 fix:
-	docker-compose run --rm backend vendor/bin/php-cs-fixer fix
+	docker compose run --rm backend vendor/bin/php-cs-fixer fix
 
 # Run PHPStan analysis at maximum level
 phpstan:
-	docker-compose run --rm backend vendor/bin/phpstan analyse -l max
+	docker compose run --rm backend vendor/bin/phpstan analyse -l max
 
 # Run backend unit tests analysis
 phpunit:
-	docker-compose exec -T backend vendor/bin/phpunit --colors=always || echo "Aucun test unitaire back-end détecté"
+	docker compose exec -T backend vendor/bin/phpunit --colors=always || echo "Aucun test unitaire back-end détecté"
 
 # Run frontend unit tests analysis
 npm-test:
-	docker-compose exec -T frontend npm test || echo "Aucun test unitaire front-end défini"
+	docker compose exec -T frontend npm test || echo "Aucun test unitaire front-end défini"
 
 install-cert:
 	@echo "=== Installing certificate for localhost ==="
@@ -60,3 +64,21 @@ install-cert:
 	    echo "Warning: localhost.key not found"; \
 	fi
 	@echo "Certificate generated for https://localhost in docker/certs."
+
+# Initial installation and open browser tabs
+install:
+	$(MAKE) install-cert
+	$(MAKE) build
+	$(MAKE) up
+	@echo "Opening the front-end and back-end pages in the default browser..."
+	@if command -v xdg-open >/dev/null 2>&1; then \
+	    xdg-open "https://localhost:4443/api" ; \
+	    xdg-open "http://localhost:3000" ; \
+	elif command -v open >/dev/null 2>&1; then \
+	    open "https://localhost:4443/api" ; \
+	    open "http://localhost:3000" ; \
+	else \
+	    echo "Please open the following URLs manually:" ; \
+	    echo "Backend: https://localhost:4443/api" ; \
+	    echo "Frontend: http://localhost:3000" ; \
+	fi
