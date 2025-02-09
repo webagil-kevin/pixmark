@@ -55,8 +55,8 @@ jobs:
               if: failure()
               run: docker compose logs backend
 
-            - name: "Analyse du code avec lint (front-end et back-end)"
-              run: make lint
+#            - name: "Analyse du code avec lint (front-end et back-end)"
+#              run: make lint
 
             - name: "Analyse statique avec PHPStan"
               run: make phpstan

@@ -53,12 +53,11 @@ COPY . /app
 COPY composer.json composer.lock ./
 
 # Install Composer dependencies based on the environment
-#RUN if [ "$APP_ENV" = "dev" ]; then \
-#        composer install --optimize-autoloader --no-interaction --no-progress; \
-#    else \
-#        composer install --no-dev --optimize-autoloader --no-interaction --no-progress; \
-#    fi
-RUN composer install --optimize-autoloader --no-interaction --no-progress;
+RUN if [ "$APP_ENV" = "dev" ]; then \
+        composer install --optimize-autoloader --no-interaction --no-progress; \
+    else \
+        composer install --no-dev --optimize-autoloader --no-interaction --no-progress; \
+    fi
 
 # Execute post-install scripts (e.g., cache:clear)
 RUN composer run-script post-install-cmd
