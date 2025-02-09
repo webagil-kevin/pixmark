@@ -53,11 +53,12 @@ COPY . /app
 COPY composer.json composer.lock ./
 
 # Install Composer dependencies based on the environment
-RUN if [ "$APP_ENV" = "dev" ]; then \
-        composer install --optimize-autoloader --no-interaction --no-progress; \
-    else \
-        composer install --no-dev --optimize-autoloader --no-interaction --no-progress; \
-    fi
+#RUN if [ "$APP_ENV" = "dev" ]; then \
+#        composer install --optimize-autoloader --no-interaction --no-progress; \
+#    else \
+#        composer install --no-dev --optimize-autoloader --no-interaction --no-progress; \
+#    fi
+RUN composer install --optimize-autoloader --no-interaction --no-progress;
 
 # Execute post-install scripts (e.g., cache:clear)
 RUN composer run-script post-install-cmd
@@ -68,7 +69,7 @@ RUN apt-get autoremove -y && apt-get clean -y
 # Expose ports
 # If you configure TLS via your Caddyfile, port 443 will be used for HTTPS (HTTP/2 and HTTP/3)
 # and port 80 for HTTP (HTTP/1). You can also expose another port if needed.
-EXPOSE 80 443 8000
+EXPOSE 80 443
 
 # Default command to start the application using FrankenPHP
 CMD ["frankenphp", "php-server"]
