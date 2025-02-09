@@ -19,7 +19,12 @@ down:
 
 # Create database
 db-create:
-	docker compose run --rm backend php bin/console doctrine:database:create --if-not-exists
+	@echo "Using DATABASE_URL: $(DATABASE_URL)"
+	@if echo $(DATABASE_URL) | grep -q "sqlite"; then \
+	    echo "SQLite detected, skipping doctrine:database:create"; \
+	else \
+	    docker compose run --rm backend php bin/console doctrine:database:create --if-not-exists; \
+	fi
 
 # Execute migrations
 migrate:
