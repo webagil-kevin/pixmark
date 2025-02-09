@@ -55,6 +55,9 @@ jobs:
               if: failure()
               run: docker compose logs backend
 
+            - name: "Installation des dépendances dans le conteneur backend"
+              run: docker compose exec backend composer install --prefer-dist --no-interaction
+
             - name: "Analyse du code avec lint (front-end et back-end)"
               run: make lint
 
