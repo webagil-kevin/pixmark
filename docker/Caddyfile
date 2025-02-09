@@ -1,0 +1,37 @@
+{
+    debug
+    auto_https disable_redirects
+    frankenphp
+
+    log {
+        format console
+        level DEBUG
+    }
+}
+
+localhost:443 {
+    root * /app/public
+    tls /etc/certs/localhost.pem /etc/certs/localhost-key.pem
+    php_server
+
+    tls internal {
+        protocols tls1.2 tls1.3
+    }
+
+    log {
+        output stdout
+        format console
+        level DEBUG
+    }
+}
+
+localhost:80 {
+    root * /app/public
+    php_server
+
+    log {
+        output stdout
+        format console
+        level DEBUG
+    }
+}

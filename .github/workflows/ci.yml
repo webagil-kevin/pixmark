@@ -1,0 +1,62 @@
+name: CI
+
+on:
+    push:
+        branches:
+            - main
+            - 'feat/**'
+            - 'fix/**'
+            - 'enhancement/**'
+            - 'release/**'
+    pull_request:
+        branches:
+            - main
+            - 'release/**'
+    workflow_dispatch:
+
+jobs:
+    build-and-test:
+        name: "Construction et tests"
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: "Récupération du code"
+              uses: actions/checkout@v4
+
+            - name: "Configuration de Docker Buildx"
+              uses: docker/setup-buildx-action@v3
+
+            - name: "Construction des images Docker"
+              run: docker-compose build
+
+            - name: "Démarrage des services"
+              run: docker-compose up -d
+
+            - name: "Attente de disponibilité du backend"
+              run: |
+                  echo "Vérification de la disponibilité du service backend..."
+                  for i in {1..10}; do
+                    if docker-compose exec -T backend curl -s http://localhost > /dev/null; then
+                      echo "Le backend est disponible"
+                      exit 0
+                    fi
+                    echo "En attente..."
+                    sleep 5
+                  done
+                  echo "Backend indisponible"
+                  exit 1
+
+            - name: "Analyse du code avec lint (front-end et back-end)"
+              run: make lint
+
+            - name: "Analyse statique avec PHPStan"
+              run: make phpstan
+
+            - name: "Exécution des tests back-end (PHPUnit)"
+              run: make phpunit
+
+            - name: "Exécution des tests front-end (npm test)"
+              run: make npm-test
+
+            - name: "Arrêt des services"
+              run: docker-compose down

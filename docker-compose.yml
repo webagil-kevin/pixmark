@@ -1,0 +1,32 @@
+services:
+    backend:
+        build: backend
+        container_name: pixmark-backend
+        volumes:
+            - ./backend:/app
+            - ./docker/Caddyfile:/etc/caddy/Caddyfile
+            - ./docker/certs:/etc/certs
+        ports:
+            - "8080:80"    # HTTP (si besoin)
+            - "4443:443"   # HTTPS
+            - "4443:443/udp"  # HTTP/3 (pour QUIC)
+        environment:
+            - APP_ENV=dev
+            - DATABASE_URL=sqlite:///%kernel.project_dir%/var/data.db
+            - CADDY_GLOBAL_OPTIONS=prefer_h2=1,http3=1
+        command: ["frankenphp", "run", "--config", "/etc/caddy/Caddyfile"]
+
+    frontend:
+        build:
+            context: frontend
+            args:
+                NODE_ENV: development
+        container_name: pixmark-frontend
+        volumes:
+            - ./frontend:/app
+            - /app/node_modules
+        ports:
+            - "3000:3000"
+        environment:
+            - NODE_ENV=development
+        command: ["npm", "run", "dev"]
