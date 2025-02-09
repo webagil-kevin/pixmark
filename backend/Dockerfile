@@ -40,7 +40,7 @@ RUN wget -O - https://get.symfony.com/cli/installer | bash \
     && mv /root/.symfony*/bin/symfony /usr/local/bin/symfony
 
 # Set environment variables
-ARG APP_ENV=prod
+ARG APP_ENV=dev
 ENV APP_ENV=${APP_ENV}
 
 # Set working directory
