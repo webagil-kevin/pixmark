@@ -1,5 +1,5 @@
 .PHONY: build up down lint-backend lint-frontend lint fix-frontend fix-backend fix phpstan phpunit npm-test \
-		install-cert install shell-backend shell-frontend cache-clear-backend
+		install-cert install shell-backend shell-frontend cache-clear-backend db-create migrate
 
 # Build all Docker images
 build:
@@ -16,6 +16,14 @@ stop:
 # Stop and remove the services
 down:
 	docker compose down
+
+# Create database
+db-create:
+	docker compose run --rm backend php bin/console doctrine:database:create --if-not-exists
+
+# Execute migrations
+migrate:
+	docker compose run --rm backend php bin/console doctrine:migrations:migrate --no-interaction
 
 # Run ESLint on the front-end
 lint-frontend:
@@ -78,6 +86,8 @@ install:
 	$(MAKE) install-cert
 	$(MAKE) build
 	$(MAKE) up
+	$(MAKE) db-create
+	$(MAKE) migrate
 	@echo "Opening the front-end and back-end pages in the default browser..."
 	@if command -v xdg-open >/dev/null 2>&1; then \
 	    xdg-open "https://localhost:4443/api" ; \

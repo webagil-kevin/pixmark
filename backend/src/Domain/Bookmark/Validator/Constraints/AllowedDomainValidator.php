@@ -2,6 +2,7 @@
 
 namespace App\Domain\Bookmark\Validator\Constraints;
 
+use LayerShifter\TLDExtract\Extract;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
@@ -12,8 +13,12 @@ use function is_string;
 
 class AllowedDomainValidator extends ConstraintValidator
 {
-    public function __construct(private readonly array $allowedDomains)
-    {
+    /**
+     * @param string[] $allowedDomains
+     */
+    public function __construct(
+        private readonly array $allowedDomains,
+    ) {
     }
 
     /**
@@ -40,14 +45,17 @@ class AllowedDomainValidator extends ConstraintValidator
             throw new UnexpectedValueException($value, 'string');
         }
 
-        $host = parse_url($value, \PHP_URL_HOST);
-        if (!$host) {
+        $extract = new Extract();
+        $result = $extract->parse($value);
+        $registrableDomain = $result->getRegistrableDomain();
+
+        if (!$registrableDomain) {
             return;
         }
 
-        if (!in_array($host, $this->allowedDomains, true)) {
+        if (!in_array($registrableDomain, $this->allowedDomains, true)) {
             $this->context->buildViolation($constraint->message)
-                ->setParameter('{{ domain }}', $host)
+                ->setParameter('{{ domain }}', $registrableDomain)
                 ->setParameter('{{ allowed_domains }}', implode(', ', $this->allowedDomains))
                 ->addViolation();
         }

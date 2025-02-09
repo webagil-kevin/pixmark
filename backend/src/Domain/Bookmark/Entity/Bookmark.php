@@ -3,20 +3,40 @@
 namespace App\Domain\Bookmark\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
-use App\Infrastructure\Persistence\Doctrine\BookmarkRepository;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use App\Application\Bookmark\DTO\BookmarkInput;
 use App\Domain\Bookmark\Validator\Constraints as AppAssert;
+use App\Infrastructure\Persistence\Doctrine\BookmarkRepository;
+use App\Infrastructure\Processor\BookmarkDeleteProcessor;
+use App\Infrastructure\Processor\CompositeBookmarkProcessor;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: BookmarkRepository::class)]
 #[ORM\HasLifecycleCallbacks]
-#[ApiResource]
+#[ApiResource(
+    operations: [
+        new Get(),
+        new GetCollection(),
+        new Post(
+            input: BookmarkInput::class,
+            processor: CompositeBookmarkProcessor::class
+        ),
+        new Delete(
+            processor: BookmarkDeleteProcessor::class
+        ),
+    ],
+)]
 class Bookmark
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    // @phpstan-ignore-next-line property.unusedType
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
@@ -35,6 +55,9 @@ class Bookmark
     #[Assert\Type('string')]
     private ?string $author = null;
 
+    /**
+     * @var array<string, mixed>
+     */
     #[ORM\Column(type: 'json')]
     #[Assert\NotNull(message: 'Metadata must not be null.')]
     #[Assert\Type('array')]
@@ -85,11 +108,17 @@ class Bookmark
         return $this;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getMetadata(): array
     {
         return $this->metadata;
     }
 
+    /**
+     * @param array<string, mixed> $metadata
+     */
     public function setMetadata(array $metadata): static
     {
         $this->metadata = $metadata;
