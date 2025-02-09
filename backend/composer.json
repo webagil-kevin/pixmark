@@ -86,6 +86,7 @@
         "friendsofphp/php-cs-fixer": "^3.68",
         "phpstan/phpstan": "^2.1",
         "phpstan/phpstan-phpunit": "^2.0",
-        "phpstan/phpstan-symfony": "^2.0"
+        "phpstan/phpstan-symfony": "^2.0",
+        "symfony/maker-bundle": "^1.62"
     }
 }

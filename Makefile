@@ -1,4 +1,5 @@
-.PHONY: build up down lint-backend lint-frontend lint fix phpstan phpunit npm-test install-cert install
+.PHONY: build up down lint-backend lint-frontend lint fix-frontend fix-backend fix phpstan phpunit npm-test \
+		install-cert install shell-backend shell-frontend
 
 # Build all Docker images
 build:
@@ -27,9 +28,16 @@ lint-backend:
 # Run both linters
 lint: lint-frontend lint-backend
 
+# Automatically fix linting issues for the frontend
+fix-frontend:
+	docker compose run --rm frontend npm run lint -- --fix
+
 # Automatically fix PHP code style issues
-fix:
+fix-backend:
 	docker compose run --rm backend vendor/bin/php-cs-fixer fix
+
+# Run both fixers
+fix: fix-frontend fix-backend
 
 # Run PHPStan analysis at maximum level
 phpstan:
@@ -82,3 +90,11 @@ install:
 	    echo "Backend: https://localhost:4443/api" ; \
 	    echo "Frontend: http://localhost:3000" ; \
 	fi
+
+# Backend bash
+shell-backend:
+	docker compose exec backend bash || docker compose exec backend sh
+
+# Frontend bash
+shell-frontend:
+	docker compose exec frontend bash || docker compose exec frontend sh
