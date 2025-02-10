@@ -1,5 +1,8 @@
 # PixMark
 
+![Temps de travail sur le projet](https://wakapi.webagil.com/api/badge/Webagil/interval:any/project:PixMark)
+
+
 ## Overview
 
 This project is a web application built with a Symfony (and API Platform) backend and a Node.js-based frontend. The project is containerized with Docker, using FrankenPHP as a lightweight PHP server and Caddy for TLS termination (supporting HTTP/2 and HTTP/3). The frontend is served in a separate container using an official Node.js image.
