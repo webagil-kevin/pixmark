@@ -142,7 +142,7 @@ class Bookmark
     public function setCreatedAtValue(): void
     {
         if (null === $this->createdAt) {
-            $this->createdAt = new DateTimeImmutable();
+            $this->setCreatedAt(new DateTimeImmutable());
         }
     }
 }
