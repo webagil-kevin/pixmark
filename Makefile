@@ -1,5 +1,5 @@
 .PHONY: build up down lint-backend lint-frontend lint fix-frontend fix-backend fix phpstan phpunit npm-test \
-		install-cert install shell-backend shell-frontend cache-clear-backend db-create migrate help
+		install-cert install shell-backend shell-frontend cache-clear-backend db-reset db-create migrate help
 
 # Build all Docker images
 build:
@@ -17,13 +17,19 @@ stop:
 down:
 	docker compose down
 
+# Reset database by deleting old files
+db-reset:
+	@echo "Cleaning old database files..."
+	@if [ -f backend/var/data.db ]; then rm backend/var/data.db && echo "Deleted backend/var/data.db"; fi
+	@if [ -f backend/var/test.db ]; then rm backend/var/test.db && echo "Deleted backend/var/test.db"; fi
+
 # Create database
-db-create:
+db-create: db-reset
 	@echo "Using DATABASE_URL: $(DATABASE_URL)"
 	@if echo $(DATABASE_URL) | grep -q "sqlite"; then \
 	    echo "SQLite detected, skipping doctrine:database:create"; \
 	else \
-	    docker compose run --rm backend php bin/console doctrine:database:create --if-not-exists; \
+	    docker compose run --rm backend php bin/console doctrine:database:create; \
 	fi
 
 # Execute migrations
