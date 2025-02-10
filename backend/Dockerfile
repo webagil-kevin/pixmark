@@ -30,6 +30,13 @@ RUN install-php-extensions \
     zip \
     opcache
 
+# Install Xdebug for code coverage
+RUN pecl install xdebug && docker-php-ext-enable xdebug
+# Minimal configuration for Xdebug coverage (only in dev/test mode)
+# You can adjust the xdebug.mode=coverage in a separate conf file if desired
+RUN echo "zend_extension=$(php -i | grep ^extension_dir | cut -d' ' -f3)/xdebug.so" > /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
+    && echo "xdebug.mode=coverage" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- \
     --install-dir=/usr/local/bin --filename=composer
