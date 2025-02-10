@@ -22,54 +22,47 @@ This project is a web application built with a Symfony (and API Platform) backen
 ## Getting Started
 
 ### 1. Clone the Repository
-
 ```bash
 git clone https://github.com/webagil-kevin/pixmark.git
 cd pixmark
 ```
 
-### 2. Generate SSL Certificates
-Generate the SSL certificate for localhost by running:
-
+### 2. Install the project
 ```bash
-make install-cert
-```
-This command uses npx devcert-cli to generate a certificate and key for localhost, placing the files in ./docker/certs and renaming them as localhost.pem and localhost-key.pem.
-
-### 3. Build the Docker Images
-Build all images with:
-
-```bash
-make build
-```
-
-### 4. Start the Services
-Launch the containers in detached mode:
-
-```bash
-make up
+make install
 ```
 
 ### 5. Access the Application
-
  - Backend (HTTP): http://localhost:8080
  - Backend (HTTPS): https://localhost:4443
  - Frontend: http://localhost:3000
 
 ## Development
-
 The project uses a Makefile to simplify common tasks. Available commands include:
 
- - build: Build all Docker images.
- - up: Start the services in detached mode.
- - down: Stop and remove the services.
- - lint-frontend: Run ESLint on the frontend.
- - lint-backend: Run PHP-CS-Fixer (dry-run) on the backend.
- - lint: Run both frontend and backend linters.
- - fix: Automatically fix PHP code style issues.
- - phpstan: Run PHPStan analysis at maximum level.
- - install-cert: Generate SSL certificates for localhost.
- - You can run these commands from the root directory. For example:
+- **build**: Build all Docker images.
+- **cache-clear-backend**: Clear the backend cache.
+- **db-create**: Create the database (skips if SQLite is detected).
+- **down**: Stop and remove the services.
+- **fix**: Run both the frontend and backend fixers.
+- **fix-backend**: Automatically fix PHP code style issues.
+- **fix-frontend**: Automatically fix frontend linting issues.
+- **help**: Display a summary of all available commands.
+- **install**: Perform the initial installation – generate SSL certificates, build images, start services, create and migrate the database, and open browser tabs.
+- **install-cert**: Generate SSL certificates for localhost.
+- **lint**: Run both frontend and backend linters.
+- **lint-backend**: Run PHP-CS-Fixer (dry-run) on the backend.
+- **lint-frontend**: Run ESLint on the frontend.
+- **migrate**: Execute Doctrine migrations.
+- **npm-test**: Run frontend unit tests via npm.
+- **phpstan**: Run PHPStan analysis at maximum level.
+- **phpunit**: Run backend PHPUnit tests.
+- **shell-backend**: Open a shell in the backend container.
+- **shell-frontend**: Open a shell in the frontend container.
+- **stop**: Stop the services.
+- **up**: Start the services in detached mode.
+
+You can run these commands from the root directory. For example:
 
 ```bash
 make lint

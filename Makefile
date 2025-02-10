@@ -1,5 +1,5 @@
 .PHONY: build up down lint-backend lint-frontend lint fix-frontend fix-backend fix phpstan phpunit npm-test \
-		install-cert install shell-backend shell-frontend cache-clear-backend db-create migrate
+		install-cert install shell-backend shell-frontend cache-clear-backend db-create migrate help
 
 # Build all Docker images
 build:
@@ -117,3 +117,30 @@ shell-frontend:
 # Backend cache clear
 cache-clear-backend:
 	docker compose run --rm backend php bin/console cache:clear
+
+help:
+	@echo "\033[1;32m═══════════════════════════════════════════════════════════════════════════════\033[0m"
+	@echo "\033[1;32m               Available Commands Summary (Alphabetical Order)                 \033[0m"
+	@echo "\033[1;32m═══════════════════════════════════════════════════════════════════════════════\033[0m"
+	@echo "  \033[1;34mbuild\033[0m               - Build all Docker images"
+	@echo "  \033[1;34mcache-clear-backend\033[0m  - Clear backend cache"
+	@echo "  \033[1;34mdb-create\033[0m         - Create database (skips if SQLite detected)"
+	@echo "  \033[1;34mdown\033[0m              - Stop and remove the services"
+	@echo "  \033[1;34mfix\033[0m                 - Run both fixers (frontend and backend)"
+	@echo "  \033[1;34mfix-backend\033[0m         - Automatically fix PHP code style issues"
+	@echo "  \033[1;34mfix-frontend\033[0m        - Automatically fix frontend lint issues"
+	@echo "  \033[1;34minstall\033[0m             - Initial installation and open browser tabs"
+	@echo "  \033[1;34minstall-cert\033[0m        - Install certificate for localhost"
+	@echo "  \033[1;34mlint\033[0m              - Run both linters (frontend and backend)"
+	@echo "  \033[1;34mlint-backend\033[0m      - Run PHP-CS-Fixer in dry-run mode on the backend"
+	@echo "  \033[1;34mlint-frontend\033[0m     - Run ESLint on the frontend"
+	@echo "  \033[1;34mmigrate\033[0m           - Execute migrations"
+	@echo "  \033[1;34mnpm-test\033[0m            - Run frontend unit tests via npm"
+	@echo "  \033[1;34mphpstan\033[0m             - Run PHPStan analysis at maximum level"
+	@echo "  \033[1;34mphpunit\033[0m             - Run backend PHPUnit tests"
+	@echo "  \033[1;34mshell-backend\033[0m       - Open a shell in the backend container"
+	@echo "  \033[1;34mshell-frontend\033[0m      - Open a shell in the frontend container"
+	@echo "  \033[1;34mstop\033[0m               - Stop the services"
+	@echo "  \033[1;34mup\033[0m                 - Start the services in detached mode"
+	@echo "\033[1;32m═══════════════════════════════════════════════════════════════════════════════\033[0m"
+	@echo "\033[1;33mUsage: make <command>\033[0m"
