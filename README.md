@@ -35,9 +35,9 @@ cd pixmark
 make install
 ```
 
-### 5. Access the Application
- - Backend (HTTP): http://localhost:8080
- - Backend (HTTPS): https://localhost:4443
+### 3. Access the Application
+ - Backend (HTTP): http://localhost:8080/api
+ - Backend (HTTPS): https://localhost:4443/api
  - Frontend: http://localhost:3000
 
 ## Development
