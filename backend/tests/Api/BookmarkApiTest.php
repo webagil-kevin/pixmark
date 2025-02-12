@@ -26,7 +26,7 @@ class BookmarkApiTest extends ApiTestCase
     public function testCreateBookmarkVimeo(): void
     {
         $client = static::createClient();
-        $response = $client->request('POST', '/api/bookmarks', [
+        $response = $client->request('POST', '/back/api/bookmarks', [
             'headers' => [
                 'Accept' => 'application/ld+json',
                 'Content-Type' => 'application/ld+json',
@@ -55,7 +55,7 @@ class BookmarkApiTest extends ApiTestCase
     public function testCreateBookmarkFlickr(): void
     {
         $client = static::createClient();
-        $response = $client->request('POST', '/api/bookmarks', [
+        $response = $client->request('POST', '/back/api/bookmarks', [
             'headers' => [
                 'Accept' => 'application/ld+json',
                 'Content-Type' => 'application/ld+json',
@@ -85,7 +85,7 @@ class BookmarkApiTest extends ApiTestCase
     public function testCreateBookmarkInvalidDomain(): void
     {
         $client = static::createClient();
-        $response = $client->request('POST', '/api/bookmarks', [
+        $response = $client->request('POST', '/back/api/bookmarks', [
             'headers' => [
                 'Accept' => 'application/ld+json',
                 'Content-Type' => 'application/ld+json',
@@ -109,7 +109,7 @@ class BookmarkApiTest extends ApiTestCase
         $client = static::createClient();
 
         // Create a bookmark first to ensure collection isn't empty
-        $createResponse = $client->request('POST', '/api/bookmarks', [
+        $createResponse = $client->request('POST', '/back/api/bookmarks', [
             'headers' => [
                 'Accept' => 'application/ld+json',
                 'Content-Type' => 'application/ld+json',
@@ -123,7 +123,7 @@ class BookmarkApiTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
 
         // Get the collection
-        $response = $client->request('GET', '/api/bookmarks', [
+        $response = $client->request('GET', '/back/api/bookmarks', [
             'headers' => [
                 'Accept' => 'application/ld+json',
             ],
@@ -174,7 +174,7 @@ class BookmarkApiTest extends ApiTestCase
     {
         $client = static::createClient();
         // Create a bookmark to retrieve its ID
-        $postResponse = $client->request('POST', '/api/bookmarks', [
+        $postResponse = $client->request('POST', '/back/api/bookmarks', [
             'headers' => [
                 'Accept' => 'application/ld+json',
                 'Content-Type' => 'application/ld+json',
@@ -188,7 +188,7 @@ class BookmarkApiTest extends ApiTestCase
         $id = $bookmark['id'];
 
         // Retrieve the created bookmark
-        $getResponse = $client->request('GET', "/api/bookmarks/{$id}", [
+        $getResponse = $client->request('GET', "/back/api/bookmarks/{$id}", [
             'headers' => [
                 'Accept' => 'application/ld+json',
             ],
@@ -204,7 +204,7 @@ class BookmarkApiTest extends ApiTestCase
     public function testGetBookmarkByIdNotFound(): void
     {
         $client = static::createClient();
-        $client->request('GET', '/api/bookmarks/99', [
+        $client->request('GET', '/back/api/bookmarks/99', [
             'headers' => [
                 'Accept' => 'application/ld+json',
             ],
@@ -219,7 +219,7 @@ class BookmarkApiTest extends ApiTestCase
     {
         $client = static::createClient();
         // Create a bookmark to delete
-        $postResponse = $client->request('POST', '/api/bookmarks', [
+        $postResponse = $client->request('POST', '/back/api/bookmarks', [
             'headers' => [
                 'Accept' => 'application/ld+json',
                 'Content-Type' => 'application/ld+json',
@@ -233,7 +233,7 @@ class BookmarkApiTest extends ApiTestCase
         $id = $bookmark['id'];
 
         // Delete the bookmark
-        $client->request('DELETE', "/api/bookmarks/{$id}", [
+        $client->request('DELETE', "/back/api/bookmarks/{$id}", [
             'headers' => [
                 'Accept' => 'application/ld+json',
             ],
@@ -241,7 +241,7 @@ class BookmarkApiTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
 
         // Verify that the bookmark no longer exists (GET should return 404)
-        $client->request('GET', "/api/bookmarks/{$id}", [
+        $client->request('GET', "/back/api/bookmarks/{$id}", [
             'headers' => [
                 'Accept' => 'application/ld+json',
             ],
@@ -255,7 +255,7 @@ class BookmarkApiTest extends ApiTestCase
     public function testDeleteBookmarkNotFound(): void
     {
         $client = static::createClient();
-        $client->request('DELETE', '/api/bookmarks/99', [
+        $client->request('DELETE', '/back/api/bookmarks/99', [
             'headers' => [
                 'Accept' => 'application/ld+json',
             ],

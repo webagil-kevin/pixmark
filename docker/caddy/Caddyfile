@@ -1,0 +1,58 @@
+{
+    # Optional: Enable or disable the admin interface
+    # admin localhost:2019
+    local_certs
+    auto_https off
+}
+
+:80 {
+    # Redirect HTTP to HTTPS while preserving the host-side port
+    redir https://{http.request.host}{uri} permanent
+}
+
+:443 {
+    # TLS configuration with local certificates
+    tls /etc/certs/localhost.pem /etc/certs/localhost-key.pem {
+        alpn h2 h3
+    }
+
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        Permissions-Policy "interest-cohort=()"
+        X-XSS-Protection "1; mode=block"
+        X-Content-Type-Options "nosniff"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        X-Frame-Options "SAMEORIGIN"
+    }
+
+    encode gzip zstd
+
+    log {
+        output discard  # Disable full logs, only critical errors will be logged
+        #output stdout
+    }
+
+    # --- Backend routes: all URLs starting with /back ---
+    handle /back* {
+        reverse_proxy pixmark-backend:80 {
+            header_up Host              {host}:{port}
+            header_up X-Real-IP         {remote_host}
+            header_up X-Forwarded-For   {remote_host}
+            header_up X-Forwarded-Host  {host}:{port}
+            header_up X-Forwarded-Proto {scheme}
+            header_up X-Forwarded-Port  4443
+            header_up X-Original-URI    {uri}
+        }
+    }
+
+    # --- Frontend routes: all other URLs ---
+    handle {
+        reverse_proxy pixmark-frontend:3000 {
+            header_up Host              {host}
+            header_up X-Real-IP         {remote_host}
+            header_up X-Forwarded-For   {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+            header_up X-Forwarded-Port  4443
+        }
+    }
+}

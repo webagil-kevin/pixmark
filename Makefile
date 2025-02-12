@@ -1,153 +1,149 @@
-.PHONY: build up down lint-backend lint-frontend lint fix-frontend fix-backend fix phpstan phpunit npm-test \
-		install-cert install shell-backend shell-frontend cache-clear-backend db-reset db-create migrate help
+.PHONY: help install build up down stop restart logs \
+		install-cert db-reset db-create migrate \
+		lint lint-frontend lint-backend fix fix-frontend fix-backend \
+		test phpstan phpunit npm-test \
+		shell-backend shell-frontend cache-clear-backend
 
-# Build all Docker images
-build:
-	docker compose build
+# Variables
+DOCKER_COMPOSE = docker compose
+BACKEND_EXEC = $(DOCKER_COMPOSE) exec -T backend
+FRONTEND_EXEC = $(DOCKER_COMPOSE) exec -T frontend
+BACKEND_RUN = $(DOCKER_COMPOSE) run --rm backend
+FRONTEND_RUN = $(DOCKER_COMPOSE) run --rm frontend
 
-# Start the services in detached mode
-up:
-	docker compose up -d
+# URLs
+BACKEND_URL = https://localhost:4443/back/api
+FRONTEND_URL = https://localhost:4443
 
-# Stop the services
-stop:
-	docker compose stop
+# ══════════════════════════════════════════════
+#  Installation & Configuration
+# ══════════════════════════════════════════════
 
-# Stop and remove the services
-down:
-	docker compose down
+install: install-cert build up db-create migrate open-browser ## Complete project installation
 
-# Reset database by deleting old files
-db-reset:
-	@echo "Cleaning old database files..."
-	@if [ -f backend/var/data.db ]; then rm backend/var/data.db && echo "Deleted backend/var/data.db"; fi
-	@if [ -f backend/var/test.db ]; then rm backend/var/test.db && echo "Deleted backend/var/test.db"; fi
-
-# Create database
-db-create: db-reset
-	@echo "Using DATABASE_URL: $(DATABASE_URL)"
-	@if echo $(DATABASE_URL) | grep -q "sqlite"; then \
-	    echo "SQLite detected, skipping doctrine:database:create"; \
-	else \
-	    docker compose run --rm backend php bin/console doctrine:database:create; \
-	fi
-
-# Execute migrations
-migrate:
-	docker compose run --rm backend php bin/console doctrine:migrations:migrate --no-interaction
-
-# Run ESLint on the front-end
-lint-frontend:
-	docker compose run --rm frontend npm run lint
-
-# Run PHP-CS-Fixer in dry-run mode on the back-end
-lint-backend:
-	docker compose run --rm backend vendor/bin/php-cs-fixer fix --dry-run --diff
-
-# Run both linters
-lint: lint-frontend lint-backend
-
-# Automatically fix linting issues for the frontend
-fix-frontend:
-	docker compose run --rm frontend npm run lint -- --fix
-
-# Automatically fix PHP code style issues
-fix-backend:
-	docker compose run --rm backend vendor/bin/php-cs-fixer fix
-
-# Run both fixers
-fix: fix-frontend fix-backend
-
-# Run PHPStan analysis at maximum level
-phpstan:
-	docker compose run --rm backend vendor/bin/phpstan analyse -l max
-
-# Run backend unit tests analysis
-phpunit:
-	docker compose exec -T backend vendor/bin/phpunit --colors=always || echo "Aucun test unitaire back-end détecté"
-
-# Run frontend unit tests analysis
-npm-test:
-	docker compose exec -T frontend npm test || echo "Aucun test unitaire front-end défini"
-
-install-cert:
-	@echo "=== Installing certificate for localhost ==="
+install-cert: ## Install SSL certificate for localhost
+	@echo "=== Installing SSL certificate for localhost ==="
 	@if ! command -v npx > /dev/null 2>&1; then \
-	    echo "Error: npx not found. Please install Node.js and npm."; \
-	    exit 1; \
+		echo "Error: npx not found. Please install Node.js and npm."; \
+		exit 1; \
 	fi
 	@mkdir -p docker/certs
-	@echo "Running 'npx devcert-cli generate localhost' in docker/certs directory..."
 	@cd docker/certs && npx devcert-cli generate localhost
-	@echo "Renaming generated files in docker/certs..."
 	@if [ -f docker/certs/localhost.cert ]; then \
-	    mv docker/certs/localhost.cert docker/certs/localhost.pem; \
-	else \
-	    echo "Warning: localhost.cert not found"; \
+		mv docker/certs/localhost.cert docker/certs/localhost.pem; \
 	fi
 	@if [ -f docker/certs/localhost.key ]; then \
-	    mv docker/certs/localhost.key docker/certs/localhost-key.pem; \
-	else \
-	    echo "Warning: localhost.key not found"; \
+		mv docker/certs/localhost.key docker/certs/localhost-key.pem; \
 	fi
 	@echo "Certificate generated for https://localhost in docker/certs."
 
-# Initial installation and open browser tabs
-install:
-	$(MAKE) install-cert
-	$(MAKE) build
-	$(MAKE) up
-	$(MAKE) db-create
-	$(MAKE) migrate
-	@echo "Opening the front-end and back-end pages in the default browser..."
-	@if command -v xdg-open >/dev/null 2>&1; then \
-	    xdg-open "https://localhost:4443/api" ; \
-	    xdg-open "http://localhost:3000" ; \
-	elif command -v open >/dev/null 2>&1; then \
-	    open "https://localhost:4443/api" ; \
-	    open "http://localhost:3000" ; \
+# ══════════════════════════════════════════════
+#  Docker Operations
+# ══════════════════════════════════════════════
+
+build: ## Build Docker images
+	$(DOCKER_COMPOSE) build
+
+up: ## Start services
+	$(DOCKER_COMPOSE) up -d
+
+down: ## Stop and remove services
+	$(DOCKER_COMPOSE) down
+
+stop: ## Stop services
+	$(DOCKER_COMPOSE) stop
+
+restart: stop up ## Restart services
+
+logs: ## Display logs
+	$(DOCKER_COMPOSE) logs -f
+
+# ══════════════════════════════════════════════
+#  Database Operations
+# ══════════════════════════════════════════════
+
+db-reset: ## Reset databases
+	@echo "Cleaning database files..."
+	@rm -f backend/var/data.db backend/var/test.db
+	@echo "Database files removed."
+
+db-create: db-reset ## Create database
+	@echo "Using DATABASE_URL: $(DATABASE_URL)"
+	@if echo $(DATABASE_URL) | grep -q "sqlite"; then \
+		echo "SQLite detected, skipping database creation"; \
 	else \
-	    echo "Please open the following URLs manually:" ; \
-	    echo "Backend: https://localhost:4443/api" ; \
-	    echo "Frontend: http://localhost:3000" ; \
+		$(BACKEND_RUN) php bin/console doctrine:database:create; \
 	fi
 
-# Backend bash
-shell-backend:
-	docker compose exec backend bash || docker compose exec backend sh
+migrate: ## Run database migrations
+	$(BACKEND_RUN) php bin/console doctrine:migrations:migrate --no-interaction
 
-# Frontend bash
-shell-frontend:
-	docker compose exec frontend bash || docker compose exec frontend sh
+# ══════════════════════════════════════════════
+#  Linting & Fixing
+# ══════════════════════════════════════════════
 
-# Backend cache clear
-cache-clear-backend:
-	docker compose run --rm backend php bin/console cache:clear
+lint: lint-frontend lint-backend ## Run all linters
 
-help:
+lint-frontend: ## Run frontend linter
+	$(FRONTEND_RUN) npm run lint
+
+lint-backend: ## Run backend linter
+	$(BACKEND_RUN) vendor/bin/php-cs-fixer fix --dry-run --diff
+
+fix: fix-frontend fix-backend ## Run all fixers
+
+fix-frontend: ## Fix frontend code style
+	$(FRONTEND_RUN) npm run lint -- --fix
+
+fix-backend: ## Fix backend code style
+	$(BACKEND_RUN) vendor/bin/php-cs-fixer fix
+
+# ══════════════════════════════════════════════
+#  Testing & Analysis
+# ══════════════════════════════════════════════
+
+test: phpstan phpunit npm-test ## Run all tests
+
+phpstan: ## Run PHPStan static analysis
+	$(BACKEND_RUN) vendor/bin/phpstan analyse -l max
+
+phpunit: ## Run backend unit tests
+	$(BACKEND_EXEC) vendor/bin/phpunit --colors=always || echo "No backend unit tests detected"
+
+npm-test: ## Run frontend unit tests
+	$(FRONTEND_EXEC) npm test || echo "No frontend unit tests defined"
+
+# ══════════════════════════════════════════════
+#  Utility Commands
+# ══════════════════════════════════════════════
+
+shell-backend: ## Open shell in backend container
+	$(DOCKER_COMPOSE) exec backend bash || $(DOCKER_COMPOSE) exec backend sh
+
+shell-frontend: ## Open shell in frontend container
+	$(DOCKER_COMPOSE) exec frontend bash || $(DOCKER_COMPOSE) exec frontend sh
+
+cache-clear-backend: ## Clear backend cache
+	$(BACKEND_RUN) php bin/console cache:clear
+
+open-browser: ## Open application URLs in browser
+	@echo "Opening pages in default browser..."
+	@if command -v xdg-open >/dev/null 2>&1; then \
+		xdg-open "$(BACKEND_URL)" ; \
+		xdg-open "$(FRONTEND_URL)" ; \
+	elif command -v open >/dev/null 2>&1; then \
+		open "$(BACKEND_URL)" ; \
+		open "$(FRONTEND_URL)" ; \
+	else \
+		echo "Please open the following URLs manually:" ; \
+		echo "Backend: $(BACKEND_URL)" ; \
+		echo "Frontend: $(FRONTEND_URL)" ; \
+	fi
+
+help: ## Display this help message
 	@echo "\033[1;32m═══════════════════════════════════════════════════════════════════════════════\033[0m"
-	@echo "\033[1;32m               Available Commands Summary (Alphabetical Order)                 \033[0m"
+	@echo "\033[1;32m                           Available Commands                                  \033[0m"
 	@echo "\033[1;32m═══════════════════════════════════════════════════════════════════════════════\033[0m"
-	@echo "  \033[1;34mbuild\033[0m                 Build all Docker images"
-	@echo "  \033[1;34mcache-clear-backend\033[0m   Clear backend cache"
-	@echo "  \033[1;34mdb-reset\033[0m              Remove database (if exist)"
-	@echo "  \033[1;34mdb-create\033[0m             Create database (skips if SQLite detected)"
-	@echo "  \033[1;34mdown\033[0m                  Stop and remove the services"
-	@echo "  \033[1;34mfix\033[0m                   Run both fixers (frontend and backend)"
-	@echo "  \033[1;34mfix-backend\033[0m           Automatically fix PHP code style issues"
-	@echo "  \033[1;34mfix-frontend\033[0m          Automatically fix frontend lint issues"
-	@echo "  \033[1;34minstall\033[0m               Initial installation and open browser tabs"
-	@echo "  \033[1;34minstall-cert\033[0m          Install certificate for localhost"
-	@echo "  \033[1;34mlint\033[0m                  Run both linters (frontend and backend)"
-	@echo "  \033[1;34mlint-backend\033[0m          Run PHP-CS-Fixer in dry-run mode on the backend"
-	@echo "  \033[1;34mlint-frontend\033[0m         Run ESLint on the frontend"
-	@echo "  \033[1;34mmigrate\033[0m               Execute migrations"
-	@echo "  \033[1;34mnpm-test\033[0m              Run frontend unit tests via npm"
-	@echo "  \033[1;34mphpstan\033[0m               Run PHPStan analysis at maximum level + code coverage"
-	@echo "  \033[1;34mphpunit\033[0m               Run backend PHPUnit tests"
-	@echo "  \033[1;34mshell-backend\033[0m         Open a shell in the backend container"
-	@echo "  \033[1;34mshell-frontend\033[0m        Open a shell in the frontend container"
-	@echo "  \033[1;34mstop\033[0m                  Stop the services"
-	@echo "  \033[1;34mup\033[0m                   	Start the services in detached mode"
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[1;34m%-20s\033[0m %s\n", $$1, $$2}'
 	@echo "\033[1;32m═══════════════════════════════════════════════════════════════════════════════\033[0m"
 	@echo "\033[1;33mUsage: make <command>\033[0m"

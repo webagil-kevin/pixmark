@@ -1,5 +1,7 @@
 # Docker generated files (e.g. generated certificates)
 /docker/certs/
+/docker/caddy/data/
+/docker/caddy/config/
 
 # IDE / Editor folders
 .idea/

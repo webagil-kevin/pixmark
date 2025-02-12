@@ -1,0 +1,32 @@
+{
+	# Global Caddy options
+	auto_https off
+	admin off
+	# Enable FrankenPHP in global context
+	frankenphp
+}
+
+:80 {
+	# Set the site root to the public directory
+	root * /app/public
+
+	# Enable PHP execution with FrankenPHP
+	php_server
+
+	# Enable compression (optional)
+	encode gzip
+
+	# Pass required headers to PHP
+	header {
+		+X-Forwarded-Proto {http.request.header.X-Forwarded-Proto}
+		+X-Forwarded-Port {http.request.header.X-Forwarded-Port}
+		+X-Forwarded-Host {http.request.header.X-Forwarded-Host}
+	}
+
+	# Log requests
+	log {
+		output stdout
+		format console
+		level DEBUG
+	}
+}

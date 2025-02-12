@@ -9,12 +9,12 @@ This project is a web application built with a Symfony (and API Platform) backen
 
 ## Architecture
 
+- **Reverse Proxy / TLS:**  
+  Caddy is used to serve the frontend & backend over HTTPS using certificates generated with a Makefile command.
+- **Frontend:**  
+  A Node.js application running in its own container.
 - **Backend:**  
   A Symfony application running on PHP 8.3 with FrankenPHP. The backend container is built from a custom Dockerfile based on `dunglas/frankenphp:builder-php8.3`, which installs necessary system dependencies and PHP extensions.
-- **Frontend:**  
-  A Node.js application running in its own container, exposing port 3000.
-- **Reverse Proxy / TLS:**  
-  Caddy is used (via FrankenPHP) to serve the backend over HTTPS using certificates generated with a Makefile command.
 
 ## Prerequisites
 
@@ -35,10 +35,9 @@ cd pixmark
 make install
 ```
 
-### 3. Access the Application
- - Backend (HTTP): http://localhost:8080/api
- - Backend (HTTPS): https://localhost:4443/api
- - Frontend: http://localhost:3000
+### 3. Access the Application (https)
+ - Backend: https://localhost:4443/back/api
+ - Frontend: https://localhost:4443
 
 ## Development
 The project uses a Makefile to simplify common tasks. Available commands include:
@@ -46,6 +45,7 @@ The project uses a Makefile to simplify common tasks. Available commands include
 - **build**: Build all Docker images.
 - **cache-clear-backend**: Clear the backend cache.
 - **db-create**: Create the database (skips if SQLite is detected).
+- **db-reset**: Reset database
 - **down**: Stop and remove the services.
 - **fix**: Run both the frontend and backend fixers.
 - **fix-backend**: Automatically fix PHP code style issues.
@@ -63,13 +63,13 @@ The project uses a Makefile to simplify common tasks. Available commands include
 - **shell-backend**: Open a shell in the backend container.
 - **shell-frontend**: Open a shell in the frontend container.
 - **stop**: Stop the services.
+- **test**: Run all tests
 - **up**: Start the services in detached mode.
 
 You can run these commands from the root directory. For example:
 
 ```bash
-make lint
-make phpstan
+make help
 ```
 
 ## Testing

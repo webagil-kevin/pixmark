@@ -29,7 +29,7 @@ use Symfony\Component\Validator\Constraints as Assert;
         new Delete(
             processor: BookmarkDeleteProcessor::class
         ),
-    ],
+    ]
 )]
 class Bookmark
 {

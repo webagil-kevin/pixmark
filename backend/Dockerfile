@@ -75,7 +75,4 @@ RUN apt-get autoremove -y && apt-get clean -y
 # Expose ports
 # If you configure TLS via your Caddyfile, port 443 will be used for HTTPS (HTTP/2 and HTTP/3)
 # and port 80 for HTTP (HTTP/1). You can also expose another port if needed.
-EXPOSE 80 443
-
-# Default command to start the application using FrankenPHP
-CMD ["frankenphp", "php-server"]
+EXPOSE 80 8080 443 4443
