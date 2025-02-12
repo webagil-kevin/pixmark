@@ -105,7 +105,7 @@ fix-backend: ## Fix backend code style
 test: phpstan phpunit npm-test ## Run all tests
 
 phpstan: ## Run PHPStan static analysis
-	$(BACKEND_RUN) vendor/bin/phpstan analyse -l max
+	$(BACKEND_RUN) vendor/bin/phpstan analyse -l max --memory-limit 512M
 
 phpunit: ## Run backend unit tests
 	$(BACKEND_EXEC) vendor/bin/phpunit --colors=always || echo "No backend unit tests detected"

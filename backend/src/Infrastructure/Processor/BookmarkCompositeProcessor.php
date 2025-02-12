@@ -13,11 +13,11 @@ use Symfony\Component\HttpFoundation\Request;
 /**
  * @implements ProcessorInterface<BookmarkInput, Bookmark>
  */
-class CompositeBookmarkProcessor implements ProcessorInterface
+class BookmarkCompositeProcessor implements ProcessorInterface
 {
     public function __construct(
-        private BookmarkInputTransformer $inputTransformer,
-        private BookmarkEnricherProcessor $enricherProcessor,
+        private readonly BookmarkInputTransformer $inputTransformer,
+        private readonly BookmarkEnricherProcessor $enricherProcessor,
     ) {
     }
 

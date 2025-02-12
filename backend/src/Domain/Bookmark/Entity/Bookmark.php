@@ -11,7 +11,7 @@ use App\Application\Bookmark\DTO\BookmarkInput;
 use App\Domain\Bookmark\Validator\Constraints as AppAssert;
 use App\Infrastructure\Persistence\Doctrine\BookmarkRepository;
 use App\Infrastructure\Processor\BookmarkDeleteProcessor;
-use App\Infrastructure\Processor\CompositeBookmarkProcessor;
+use App\Infrastructure\Processor\BookmarkCompositeProcessor;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -24,7 +24,7 @@ use Symfony\Component\Validator\Constraints as Assert;
         new GetCollection(),
         new Post(
             input: BookmarkInput::class,
-            processor: CompositeBookmarkProcessor::class
+            processor: BookmarkCompositeProcessor::class
         ),
         new Delete(
             processor: BookmarkDeleteProcessor::class

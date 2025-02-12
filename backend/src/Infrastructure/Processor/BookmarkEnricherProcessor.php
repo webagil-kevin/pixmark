@@ -23,18 +23,24 @@ class BookmarkEnricherProcessor implements ProcessorInterface
         private EmbedProviderInterface $embedProvider,
     ) {
     }
-
+    
     /**
-     * Processes the given Bookmark and performs operations such as deletion or metadata enrichment.
+     * Processes the given data object within the context of the specified operation.
      *
-     * @param mixed                $data         The entity to process. Expected instance of Bookmark.
-     * @param Operation            $operation    the operation to be performed
-     * @param array<string, mixed> $uriVariables variables from the URI (optional)
-     * @param array<string, mixed> $context      additional context (optional)
+     * This method ensures the provided data is an instance of the Bookmark class.
+     * If the Bookmark object has a URL and lacks essential details such as title, author,
+     * or metadata, the method retrieves additional information using the embed provider
+     * and updates the Bookmark accordingly. It then persists and flushes the updated
+     * Bookmark object to the database.
      *
-     * @return Bookmark the processed entity
+     * @param mixed $data The input data to be processed. Expected to be an instance of Bookmark.
+     * @param Operation $operation The operation context under which the data is being processed.
+     * @param array<string, mixed> $uriVariables Optional URI variables contextualizing the operation.
+     * @param array<string, mixed> $context Optional additional context for processing the operation.
      *
-     * @throws InvalidArgumentException if $data is not an instance of Bookmark
+     * @return Bookmark The processed and, if necessary, updated Bookmark object.
+     *
+     * @throws InvalidArgumentException If the provided data is not an instance of Bookmark.
      */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): Bookmark
     {
@@ -42,7 +48,13 @@ class BookmarkEnricherProcessor implements ProcessorInterface
             throw new InvalidArgumentException(sprintf('Expected instance of %s, got %s', Bookmark::class, get_debug_type($data)));
         }
 
-        if ($data->getUrl() && empty($data->getMetadata())) {
+        if ($data->getUrl() &&
+            (
+                empty($data->getTitle()) ||
+                empty($data->getAuthor()) ||
+                empty($data->getMetadata())
+            )
+        ) {
             $embedInfo = $this->embedProvider->getEmbedInfo($data->getUrl());
 
             if (isset($embedInfo['title']) && is_string($embedInfo['title'])) {
@@ -52,21 +64,20 @@ class BookmarkEnricherProcessor implements ProcessorInterface
             if (isset($embedInfo['author']) && is_string($embedInfo['author'])) {
                 $data->setAuthor($embedInfo['author']);
             }
-
-            $metadata = [];
+            
             if (isset($embedInfo['metadata']) && is_array($embedInfo['metadata'])) {
                 /** @var array<string, mixed> $metadata */
                 $metadata = array_filter($embedInfo['metadata'], function ($value): bool {
                     return (bool) $value;
                 });
+                
+                $data->setMetadata($metadata);
             }
-
-            $data->setMetadata($metadata);
+            
+            $this->entityManager->persist($data);
+            $this->entityManager->flush();
         }
-
-        $this->entityManager->persist($data);
-        $this->entityManager->flush();
-
+        
         return $data;
     }
 }
