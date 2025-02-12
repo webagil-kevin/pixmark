@@ -11,7 +11,7 @@ use Symfony\Component\HttpFoundation\Response;
  *
  * POST with a valid Vimeo URL should succeed
  * POST with a valid Flickr URL should succeed
- * POST with an invalid domain (e.g. "https://test.fr") should return a 422
+ * POST with an invalid domain (e.g. "https://john.doe") should return a 422
  * GET the collection should succeed
  * GET an existing bookmark by ID should succeed
  * GET a non-existent bookmark should return a 404
@@ -20,19 +20,26 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class BookmarkApiTest extends ApiTestCase
 {
+    private const URL =  [
+        'API' => '/back/api/bookmarks',
+        'vimeo-ok' => 'https://vimeo.com/900680873',
+        'flickr-ok' => 'https://flic.kr/p/2gPAGVq',
+        '404' => 'https://john.doe'
+    ];
+    
     /**
      * Tests creating a bookmark with a valid Vimeo URL.
      */
     public function testCreateBookmarkVimeo(): void
     {
         $client = static::createClient();
-        $response = $client->request('POST', '/back/api/bookmarks', [
+        $response = $client->request('POST', self::URL['API'], [
             'headers' => [
                 'Accept' => 'application/ld+json',
                 'Content-Type' => 'application/ld+json',
             ],
             'json' => [
-                'url' => 'https://vimeo.com/900680873',
+                'url' => self::URL['vimeo-ok'],
             ],
         ]);
 
@@ -55,13 +62,13 @@ class BookmarkApiTest extends ApiTestCase
     public function testCreateBookmarkFlickr(): void
     {
         $client = static::createClient();
-        $response = $client->request('POST', '/back/api/bookmarks', [
+        $response = $client->request('POST', self::URL['API'], [
             'headers' => [
                 'Accept' => 'application/ld+json',
                 'Content-Type' => 'application/ld+json',
             ],
             'json' => [
-                'url' => 'https://flic.kr/p/2gPAGVq',
+                'url' => self::URL['flickr-ok'],
             ],
         ]);
 
@@ -85,13 +92,13 @@ class BookmarkApiTest extends ApiTestCase
     public function testCreateBookmarkInvalidDomain(): void
     {
         $client = static::createClient();
-        $response = $client->request('POST', '/back/api/bookmarks', [
+        $response = $client->request('POST', self::URL['API'], [
             'headers' => [
                 'Accept' => 'application/ld+json',
                 'Content-Type' => 'application/ld+json',
             ],
             'json' => [
-                'url' => 'https://test.fr',
+                'url' => self::URL['404'],
             ],
         ]);
 
@@ -109,13 +116,13 @@ class BookmarkApiTest extends ApiTestCase
         $client = static::createClient();
 
         // Create a bookmark first to ensure collection isn't empty
-        $createResponse = $client->request('POST', '/back/api/bookmarks', [
+        $createResponse = $client->request('POST', self::URL['API'], [
             'headers' => [
                 'Accept' => 'application/ld+json',
                 'Content-Type' => 'application/ld+json',
             ],
             'json' => [
-                'url' => 'https://vimeo.com/900680873',
+                'url' => self::URL['vimeo-ok'],
             ],
         ]);
 
@@ -123,7 +130,7 @@ class BookmarkApiTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
 
         // Get the collection
-        $response = $client->request('GET', '/back/api/bookmarks', [
+        $response = $client->request('GET', self::URL['API'], [
             'headers' => [
                 'Accept' => 'application/ld+json',
             ],
@@ -174,13 +181,13 @@ class BookmarkApiTest extends ApiTestCase
     {
         $client = static::createClient();
         // Create a bookmark to retrieve its ID
-        $postResponse = $client->request('POST', '/back/api/bookmarks', [
+        $postResponse = $client->request('POST', self::URL['API'], [
             'headers' => [
                 'Accept' => 'application/ld+json',
                 'Content-Type' => 'application/ld+json',
             ],
             'json' => [
-                'url' => 'https://vimeo.com/900680873',
+                'url' => self::URL['vimeo-ok'],
             ],
         ]);
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
@@ -188,7 +195,7 @@ class BookmarkApiTest extends ApiTestCase
         $id = $bookmark['id'];
 
         // Retrieve the created bookmark
-        $getResponse = $client->request('GET', "/back/api/bookmarks/{$id}", [
+        $getResponse = $client->request('GET',  self::URL['API'] . "/{$id}", [
             'headers' => [
                 'Accept' => 'application/ld+json',
             ],
@@ -204,7 +211,7 @@ class BookmarkApiTest extends ApiTestCase
     public function testGetBookmarkByIdNotFound(): void
     {
         $client = static::createClient();
-        $client->request('GET', '/back/api/bookmarks/99', [
+        $client->request('GET', self::URL['API'] . '/99', [
             'headers' => [
                 'Accept' => 'application/ld+json',
             ],
@@ -219,13 +226,13 @@ class BookmarkApiTest extends ApiTestCase
     {
         $client = static::createClient();
         // Create a bookmark to delete
-        $postResponse = $client->request('POST', '/back/api/bookmarks', [
+        $postResponse = $client->request('POST', self::URL['API'], [
             'headers' => [
                 'Accept' => 'application/ld+json',
                 'Content-Type' => 'application/ld+json',
             ],
             'json' => [
-                'url' => 'https://vimeo.com/900680873',
+                'url' => self::URL['vimeo-ok'],
             ],
         ]);
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
@@ -233,7 +240,7 @@ class BookmarkApiTest extends ApiTestCase
         $id = $bookmark['id'];
 
         // Delete the bookmark
-        $client->request('DELETE', "/back/api/bookmarks/{$id}", [
+        $client->request('DELETE', self::URL['API'] . "/{$id}", [
             'headers' => [
                 'Accept' => 'application/ld+json',
             ],
@@ -241,7 +248,7 @@ class BookmarkApiTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
 
         // Verify that the bookmark no longer exists (GET should return 404)
-        $client->request('GET', "/back/api/bookmarks/{$id}", [
+        $client->request('GET', self::URL['API'] . "/{$id}", [
             'headers' => [
                 'Accept' => 'application/ld+json',
             ],
@@ -255,7 +262,7 @@ class BookmarkApiTest extends ApiTestCase
     public function testDeleteBookmarkNotFound(): void
     {
         $client = static::createClient();
-        $client->request('DELETE', '/back/api/bookmarks/99', [
+        $client->request('DELETE', self::URL['API'] . '/99', [
             'headers' => [
                 'Accept' => 'application/ld+json',
             ],
