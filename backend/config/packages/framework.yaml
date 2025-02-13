@@ -3,13 +3,8 @@ framework:
     secret: '%env(APP_SECRET)%'
     session: true
     trusted_proxies: '%env(TRUSTED_PROXIES)%'
-    trusted_headers: ['x-forwarded-for', 'x-forwarded-host', 'x-forwarded-proto', 'x-forwarded-port']
+    trusted_headers: [ 'x-forwarded-for', 'x-forwarded-host', 'x-forwarded-proto', 'x-forwarded-port' ]
     http_method_override: false
-    router:
-        utf8: true
-        default_uri: '/back'
-    assets:
-        base_path: '/back'
 
 when@test:
     framework:

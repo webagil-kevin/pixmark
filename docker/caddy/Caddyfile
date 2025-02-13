@@ -32,8 +32,21 @@
         #output stdout
     }
 
-    # --- Backend routes: all URLs starting with /back ---
-    handle /back* {
+    # --- Backend routes: all URLs starting with /back/ ---
+    handle /back/* {
+        reverse_proxy pixmark-backend:80 {
+            header_up Host              {host}:{port}
+            header_up X-Real-IP         {remote_host}
+            header_up X-Forwarded-For   {remote_host}
+            header_up X-Forwarded-Host  {host}:{port}
+            header_up X-Forwarded-Proto {scheme}
+            header_up X-Forwarded-Port  4443
+            header_up X-Original-URI    {uri}
+        }
+    }
+
+    # --- Backend routes: assets starting with /bundles/ ---
+    handle /bundles/* {
         reverse_proxy pixmark-backend:80 {
             header_up Host              {host}:{port}
             header_up X-Real-IP         {remote_host}

@@ -3,14 +3,11 @@ services:
         image: caddy:2-alpine
         container_name: pixmark-proxy
         ports:
-            - "8080:80"      # HTTP sur l'hôte
-            - "4443:443"     # HTTPS sur l'hôte
-            - "4443:443/udp" # HTTP/3
+            - "8080:80"
+            - "4443:443"
         volumes:
             - ./docker/caddy/Caddyfile:/etc/caddy/Caddyfile
             - ./docker/certs:/etc/certs
-            - ./docker/caddy/data:/data
-            - ./docker/caddy/config:/config
         depends_on:
             - backend
             - frontend
@@ -20,30 +17,18 @@ services:
     backend:
         build:
             context: backend
-            dockerfile: Dockerfile
-            args:
-                APP_ENV: ${APP_ENV:-dev}
         container_name: pixmark-backend
         volumes:
             - ./backend:/app
-            - ./backend/var:/app/var
         environment:
             - APP_ENV=${APP_ENV:-dev}
-            - DATABASE_URL=sqlite:///%kernel.project_dir%/var/data.db
         networks:
             - pixmark
-        command: ["frankenphp", "run", "--config", "/app/Caddyfile"]
-        healthcheck:
-            test: ["CMD", "curl", "-f", "http://localhost"]
-            interval: 30s
-            timeout: 10s
-            retries: 3
+        command: [ "frankenphp", "run", "--config", "/app/Caddyfile" ]
 
     frontend:
         build:
             context: frontend
-            args:
-                NODE_ENV: ${NODE_ENV:-development}
         container_name: pixmark-frontend
         volumes:
             - ./frontend:/app
@@ -52,7 +37,7 @@ services:
             - NODE_ENV=${NODE_ENV:-development}
         networks:
             - pixmark
-        command: ["npm", "run", "dev"]
+        command: [ "npm", "run", "dev" ]
 
 networks:
     pixmark:

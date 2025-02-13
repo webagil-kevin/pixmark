@@ -5,7 +5,3 @@
 #    type: attribute
 #    prefix: /back
 
-api:
-    resource: .
-    type: api_platform
-    prefix: /back/api
