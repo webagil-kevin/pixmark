@@ -4,9 +4,9 @@ use PhpCsFixer\Config;
 use PhpCsFixer\Finder;
 
 $finder = (new Finder())
-    ->in([__DIR__.'/src', __DIR__.'/tests'])                // Répertoires à analyser
-    ->exclude(['var', 'vendor', 'tests/tmp', 'fixtures'])   // Répertoires à exclure
-    ->name('*.php')                                 // Analyser les fichiers PHP uniquement
+    ->in([__DIR__.'/src', __DIR__.'/tests'])    // Répertoires à analyser
+    ->exclude(['var', 'vendor'])                // Répertoires à exclure
+    ->name('*.php')                     // Analyser les fichiers PHP uniquement
     ->ignoreDotFiles(true)
     ->ignoreVCS(true);
 
